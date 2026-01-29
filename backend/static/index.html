@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Video Upload - Transcribe + OCR</title>
+</head>
+<body>
+  <h2>Upload a video (mp4, avi, mov)</h2>
+  <form id="uploadForm">
+    <input type="file" id="videoFile" name="file" accept=".mp4,.mov,.avi" />
+    <label for="target_language">Translate to (comma-separated ISO codes, e.g. en,my):</label>
+    <input type="text" id="target_language" name="target_languages" value="en,my" />
+    <label for="frame_interval">OCR frame interval (sec):</label>
+    <input type="number" id="frame_interval" step="0.1" value="1.0" name="frame_interval" />
+    <label for="whisper_model_size">Whisper model size (tiny, base, small, medium, large):</label>
+    <input type="text" id="whisper_model_size" name="whisper_model_size" value="small" />
+    <button type="submit">Upload</button>
+  </form>
+
+  <div id="status"></div>
+  <div id="links"></div>
+
+<script>
+document.getElementById('uploadForm').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const fileInput = document.getElementById('videoFile');
+  if (!fileInput.files.length) {
+    alert('Choose a video file first');
+    return;
+  }
+  const fd = new FormData();
+  fd.append('file', fileInput.files[0]);
+  fd.append('target_languages', document.getElementById('target_language').value);
+  fd.append('frame_interval', document.getElementById('frame_interval').value);
+  fd.append('whisper_model_size', document.getElementById('whisper_model_size').value);
+
+  document.getElementById('status').innerText = 'Uploading...';
+  const res = await fetch('/upload', { method: 'POST', body: fd });
+  const data = await res.json();
+  if (!res.ok) {
+    document.getElementById('status').innerText = 'Error: ' + JSON.stringify(data);
+    return;
+  }
+  document.getElementById('status').innerText = 'Processing finished. Files:';
+  const linksDiv = document.getElementById('links');
+  linksDiv.innerHTML = '';
+  data.files.forEach(f => {
+    const a = document.createElement('div');
+    a.innerText = f;
+    linksDiv.appendChild(a);
+  });
+  const dl = document.createElement('a');
+  dl.href = data.download;
+  dl.innerText = 'Download results (zip)';
+  dl.download = '';
+  linksDiv.appendChild(dl);
+});
+</script>
+</body>
+</html>

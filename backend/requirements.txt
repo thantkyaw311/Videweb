@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+python-multipart
+aiofiles
+openai
+paddleocr
+paddlepaddle-gpu
+opencv-python-headless
+python-dotenv
+openai-whisper
+torch
